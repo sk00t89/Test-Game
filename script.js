@@ -26,41 +26,46 @@ const state = {
     coins: 0,
     citizens: 0,
     bonus: 0.02,
+
 };
 
 const businessesObj = {
-  roads: {
-    name: 'Roads',
-    amount: 1,
-    earning: 2,
-    timecycle: 1000,
-    bot: false,
-    cost: 1,
-    adder: 2,
-    intervalId: null,
-    producing: false,
-    timeoutId: null,
-    goal: 3,
-    startAmount: 1,
-    startEarning: 2,
-    startAdder: 2,
-    startTimecycle: 1000,
-    startCost: 1,
-    multiplier: 1,
-    goalsTest: [5, 10, 20, 30],
+    roads: {
+        name: 'Roads',
+        amount: 1,
+        earning: 2,
+        timecycle: 1000,
+        bot: false,
+        cost: 1,
+        adder: 2,
+        intervalId: null,
+        producing: false,
+        timeoutId: null,
+        goal: 3,
+        startAmount: 1,
+        startEarning: 2,
+        startAdder: 2,
+        startTimecycle: 1000,
+        startCost: 1,
+        multiplier: 1,
+        goals: [5, 10, 20, 30], goalsIndex: 0,
 
 
 
-    elements: {
-      status: roadStatus,
-      title: roadsNum,
-      maxBtn: roadBtn5,
-      cycleStatus: roadCycleStatus,
-      cycleBtn: roadCycleBtn,
-      botBtn: roadPoliBtn,
-      goal: roadGoal,
+        elements: {
+            status: roadStatus,
+            title: roadsNum,
+            maxBtn: roadBtn5,
+            cycleStatus: roadCycleStatus,
+            cycleBtn: roadCycleBtn,
+            botBtn: roadPoliBtn,
+            goal: roadGoal,
+            buy10: roadBtn1,
+            buy25: roadBtn2,
+            buy50: roadBtn3,
+            buy100: roadBtn4,
+        },
     },
-  },
 
 };
 
@@ -68,60 +73,91 @@ const businessesObj = {
 
 const updateState = (business) => {
 
+    const buy10 = business.elements.buy10;
+    const buy25 = business.elements.buy25;
+    const buy50 = business.elements.buy50;
+    const buy100 = business.elements.buy100;
+    const maxBuys = business.elements.maxBtn;
+    const bot = business.elements.botBtn;
+
+    checkMaxBuys(business) >= 1 ? maxBuys.disabled = false : maxBuys.disabled = true;
+    checkMaxBuys(business) >= 10 ? buy10.disabled = false : buy10.disabled = true;
+    checkMaxBuys(business) >= 25 ? buy25.disabled = false : buy25.disabled = true;
+    checkMaxBuys(business) >= 50 ? buy50.disabled = false : buy50.disabled = true;
+    checkMaxBuys(business) >= 100 ? buy100.disabled = false : buy100.disabled = true;
+
+    business.bot || Number(bot.value) >= state.money ? bot.disabled = true : bot.disabled = false;
 
     navMoney.innerText = `You have $${Math.floor(state.money)}.`;
     business.elements.status.innerText = `${business.adder}$ each cycle`;
     business.elements.title.innerText = `${business.name}     ${business.amount}`;
-    business.elements.maxBtn.innerText = `Buy ${Math.floor(state.money / business.cost)}`;
+    business.elements.maxBtn.innerText = `Buy ${checkMaxBuys(business)}`;
     business.elements.cycleStatus.innerText = `${business.timecycle / 1000} sec`;
-    business.elements.goal.innerText = `${business.goal}`;
-    
+    business.elements.goal.innerText = `${business.goals[business.goalsIndex]}`;
+
 };
 
-const goalTest = (business, num) => {
-  for (let i = 0; i < num; i++) {
-    if ( num === business.goalsTest[i+1]) {
-      business.goalsTest.splice(i + 1, 1);
-      business.goal = business.goalsTest[0];
-    }
-  }
-}
 
 const checkGoal = (business) => {
+    const goal = business.goals[business.goalsIndex]
 
-
-    if (business.goal >= 5 && business.amount >= 5) {
-        business.timecycle = Math.floor(business.timecycle / 2)
-        business.goal = 10;
-        console.log("Next goal " + business.goal);
-        updateState(business);
+    if (business.amount < goal) {
+        console.log("Goal not met");
         return;
     }
-    if (business.goal >= 3 && business.amount >= 3) {
-        business.timecycle = business.timecycle / 2;
-        business.goal = 5;
-        console.log("goal met!" + business.goal);
+
+    if (goal >= business.amount) {
+        business.goalsIndex += 1;
+        business.goal = business.goals[business.goalsIndex];
+        business.multiplier += 1;
+        business.timecycle = Math.floor(business.timecycle / 2);
+
+        console.log(`Next goal ${business.goal}`);
         updateState(business);
-        return;
+
     }
+
+
+
 };
+
+const checkMaxBuys = (business) => {
+    let maxBuys = 0;
+    let fakeMoney = state.money;
+    let cost = business.cost;
+
+    if (business.cost > fakeMoney) {
+        return 0;
+    }
+
+    while (fakeMoney > cost) {
+
+        fakeMoney -= cost;
+        maxBuys += 1;
+        cost += Math.floor(cost * 1.8);
+
+    }
+
+    return Number(maxBuys);
+}
 
 
 const buyBusiness = (business, num) => {
 
-  for (let i = 0; i < num; i++) {
+    for (let i = 0; i < num; i++) {
 
-    if (state.money < business.cost) {
-      console.log('You dont have enough money.');
-      break;
+        if (state.money < business.cost) {
+            console.log('You dont have enough money.');
+            break;
+        }
+        state.money -= business.cost;
+
+        business.amount += 1;
+        business.adder += Math.floor(business.amount * 1.5);
+        business.cost += Math.floor(business.cost * 1.8);
+
+        checkGoal(business);
     }
-    state.money -= business.cost;
-    business.amount += 1;
-    business.adder += Math.floor(business.amount * 1.5);
-    business.cost += Math.floor(business.cost * 1.8);
-
-    checkGoal(business);
-  }
 
 
     updateState(business);
@@ -165,33 +201,34 @@ roadBtn5.addEventListener("click", () => {
 // Payout funktion
 const payout = (business) => {
 
-  const payoutAmount = business.adder * business.multiplier;
+    const payoutAmount = business.adder * business.multiplier;
 
-  state.money += payoutAmount;
+    state.money += payoutAmount;
 
-  updateState(business);
+
+    updateState(business);
 };
 
 // Generell cykelfunktion
 
 const runCycle = (business) => {
 
-  if(business.producing) {
-    console.log(`Your ${business.name} is already running`);
-    return;
-  }
+    if(business.producing || business.bot) {
+        console.log(`Your ${business.name} is already running`);
+        return;
+    }
 
-  business.elements.cycleBtn.disabled = true;
-  business.producing = true;
+    business.elements.cycleBtn.disabled = true;
+    business.producing = true;
 
-  business.timeoutId = setTimeout(() => {
-    payout(business);
+    business.timeoutId = setTimeout(() => {
+        payout(business);
 
-    business.producing = false;
-    business.elements.cycleBtn.disabled = false;
+        business.producing = false;
+        business.elements.cycleBtn.disabled = false;
 
-    console.log(`${business.name} finshed`);
-  }, business.timecycle)
+        console.log(`${business.name} finshed`);
+    }, business.timecycle)
 
 };
 
@@ -203,25 +240,26 @@ roadCycleBtn.addEventListener("click", () => {
 // Bot-funktion
 const hireBot = (business, cost) => {
 
-  if (business.bot) {
-    console.log(`You already have a bot.`);
-    return;
-  }
-  if (cost > state.money) {
-    console.log(`You dont have enough money for a bot.`);
-    return;
-  }
+    if (business.bot) {
+        console.log(`You already have a bot.`);
+        return;
+    }
+    if (cost > state.money) {
+        console.log(`You dont have enough money for a bot.`);
+        return;
+    }
 
-  business.intervalId = setInterval(() =>
-    payout(business), business.timecycle,
-  );
+    business.intervalId = setInterval(() =>
+        payout(business), business.timecycle,
+    );
 
-  business.bot = true;
-  state.money -= cost;
-  business.elements.botBtn.disabled = true;
+    business.bot = true;
+    state.money -= cost;
 
-  console.log(`${business} bot started.`);
-  updateState(business);
+
+
+    console.log(`${business} bot started.`);
+    updateState(business);
 
 
 };
@@ -237,29 +275,30 @@ roadPoliBtn.addEventListener("click", () => {
 // Reset Btn
 resetBtn.addEventListener("click", () => {
 
-  state.money = 1;
+    state.money = 1;
 
-  Object.values(businessesObj).forEach((b) => {
-    clearInterval(b.intervalId);
-    clearTimeout(b.timeoutId);
 
-    b.amount = b.startAmount;
-    b.cost = b.startCost;
-    b.adder = b.startAdder;
-    b.timecycle = b.startTimecycle;
+    Object.values(businessesObj).forEach((b) => {
+        clearInterval(b.intervalId);
+        clearTimeout(b.timeoutId);
 
-    b.multiplier = 1;
-    b.bot = false;
-    b.producing = false;
-    b.intervalId = null;
-    b.timeoutId = null;
-    b.goal = 3;
+        b.amount = b.startAmount;
+        b.cost = b.startCost;
+        b.adder = b.startAdder;
+        b.timecycle = b.startTimecycle;
 
-    b.elements.status.innerText = "Cycle: manual";
-    b.elements.cycleBtn.disabled = false;
-    b.elements.botBtn.disabled = false;
+        b.multiplier = 1;
+        b.bot = false;
+        b.producing = false;
+        b.intervalId = null;
+        b.timeoutId = null;
+        b.goalsIndex = 0;
 
-    updateState(b);
-  });
+        b.elements.status.innerText = "Cycle: manual";
+        b.elements.cycleBtn.disabled = false;
+        b.elements.botBtn.disabled = false;
+
+        updateState(b);
+    });
 
 });
