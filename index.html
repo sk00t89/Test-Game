@@ -8,11 +8,11 @@
 </head>
 <body>
 <div class="topnav">
-    <p id="nav-p" class="topnav-p">You have $1.</p>
+    <p id="nav-p" class="topnav-p"></p>
 </div>
-    <h1>Mark testgame</h1>
+<h1>Mark testgame</h1>
 <div class="main-div">
-    <div class="roads-div">
+    <div class="business-div">
         <div class="status-div">
             <p id="road-status"></p>
         </div>
@@ -26,17 +26,40 @@
                 <p id="roads-goal"></p>
             </div>
         </div>
-     <div class="btn-div">
-         <div class="btn"><button value="10" id="road-btn-1" disabled>Buy 10</button></div>
-         <div class="btn"><button value="25" id="road-btn-2" disabled>Buy 25</button></div>
-         <div class="btn"><button value="50" id="road-btn-3" disabled>Buy 50</button></div>
-         <div class="btn"><button value="100" id="road-btn-4" disabled>Buy 100</button></div>
-         <div class="btn"><button value="max" id="road-btn-5" disabled>Buy</button></div>
-         <div class="cycle-div"><button  value="1" id="roadcycle-btn">GO</button></div>
-     </div>
+        <div class="btn-div">
+            <div class="btn"><button value="5" id="road-btn-1" disabled>Buy 5</button></div>
+            <div class="btn"><button value="25" id="road-btn-2" disabled>Buy 25</button></div>
+            <div class="btn"><button value="50" id="road-btn-3" disabled>Buy 50</button></div>
+            <div class="btn"><button value="100" id="road-btn-4" disabled>Buy 100</button></div>
+            <div class="btn"><button value="max" id="road-btn-5" >Buy</button></div>
+            <div class="cycle-div"><button  value="1" id="roadcycle-btn">GO</button></div>
+        </div>
 
     </div>
-    <div class="apartments"></div>
+    <div class="business-div">
+        <div class="status-div">
+            <p id="app-status"></p>
+        </div>
+        <div class="text-div">
+            <h2 class="category-text" id="app-text">Apartments</h2>
+
+            <div class="stats-row">
+                <p>Cycle:</p>
+                <p id="app-cycle"></p>
+                <p>Next goal:</p>
+                <p id="app-goal"></p>
+            </div>
+        </div>
+        <div class="btn-div">
+            <div class="btn"><button value="5" id="app-btn1" disabled>Buy 5</button></div>
+            <div class="btn"><button value="10" id="app-btn2" disabled>Buy 10</button></div>
+            <div class="btn"><button value="25" id="app-btn3" disabled>Buy 25</button></div>
+            <div class="btn"><button value="100" id="app-btn4" disabled>Buy 100</button></div>
+            <div class="btn"><button value="max" id="app-btn5">Buy</button></div>
+            <div class="cycle-div"><button  value="1" id="app-cycle-btn">GO</button></div>
+        </div>
+    </div>
+
     <div class="offices"></div>
     <div class="local-transport"></div>
     <div class="education"></div>
@@ -48,7 +71,8 @@
 
     <div class="bottomnav">
         <button id="resetbtn">RESET</button>
-        <button id="roadpolitic" value="350" disabled>Hire road-politician</button>
+        <button id="roadpolitic" value="350" disabled>Hire Road-politician</button>
+        <button id="app-politic" value="1500" disabled>Hire Apartment-politician</button>
     </div>
 </div>
 <script src="script.js"></script>
