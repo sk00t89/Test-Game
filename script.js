@@ -12,6 +12,7 @@ const roadGoal = document.getElementById("roads-goal");
 const roadCycleBtn = document.getElementById("roadcycle-btn");
 const roadsNum = document.getElementById("roadstext");
 const roadPoliBtn = document.getElementById("roadpolitic");
+const roadProgressFill = document.getElementById("roads-progress-fill");
 
 const appBtn1 = document.getElementById("app-btn1");
 const appBtn2 = document.getElementById("app-btn2");
@@ -24,14 +25,13 @@ const appGoal = document.getElementById("app-goal");
 const appCycleBtn = document.getElementById("app-cycle-btn");
 const appsNum = document.getElementById("app-text");
 const appPoliBtn = document.getElementById("app-politic");
+const appsProgressFill = document.getElementById("apps-progress-fill");
 
 
 
-// Nästa steg:
-// 1. Fixa payout/updateState
-// 2. Lägg till timeoutId + clearTimeout i reset
-// 3. Göra Roads mer generell
-// 4. Lägga till Apartments som testkategori
+window.addEventListener("load", () => {
+  reset();
+})
 
 const state = {
     money: 1,
@@ -74,6 +74,7 @@ const businessesObj = {
       cycleBtn: roadCycleBtn,
       botBtn: roadPoliBtn,
       goal: roadGoal,
+      progress: roadProgressFill,
       buyBtns: [
         { btn: roadBtn1, value: Number(roadBtn1.value) },
         { btn: roadBtn2, value: Number(roadBtn2.value) },
@@ -112,6 +113,7 @@ const businessesObj = {
       cycleBtn: appCycleBtn,
       botBtn: appPoliBtn,
       goal: appGoal,
+      progress: appsProgressFill,
       buyBtns: [
         { btn: appBtn1, value: Number(appBtn1.value) },
         { btn: appBtn2, value: Number(appBtn2.value) },
@@ -122,10 +124,15 @@ const businessesObj = {
   },
 };
 
-
+const updateAllStates = () => {
+  Object.values(businessesObj).forEach((business) => {
+    updateState(business)
+  })
+};
 
 const updateState = (business) => {
-    const bot = business.elements.botBtn;
+
+  const bot = business.elements.botBtn;
 
     business.bot || Number(bot.value) >= state.money ? bot.disabled = true : bot.disabled = false;
     business.amount < 1 ? business.elements.cycleBtn.disabled = true : business.elements.cycleBtn.disabled = false;
@@ -143,7 +150,7 @@ const updateState = (business) => {
     business.elements.maxBtn.innerText = `Buy ${checkMaxBuys(business)}`;
     business.elements.cycleStatus.innerText = `${business.timecycle / 1000} sec`;
     business.elements.goal.innerText = `${business.goals[business.currentGoalIndex]}`;
-    
+
 };
 
 
@@ -284,26 +291,44 @@ const payout = (business) => {
 
   state.money += payoutAmount;
 
-  updateState(business);
+  updateAllStates();
 };
 
 // Generell cykelfunktion
 
 const runCycle = (business) => {
 
+  if (business.amount < 1) {
+    return;
+  }
+
   if(business.producing) {
     console.log(`Your ${business.name} is already running`);
     return;
   }
 
+  const progress = business.elements.progress;
+
+  progress.style.transition = 'none';
+  progress.style.width = '0%';
+
+  progress.offsetWidth;
+
+  progress.style.transition = `width ${business.timecycle}ms linear`;
+  progress.style.width = "100%";
+
   business.elements.cycleBtn.disabled = true;
   business.producing = true;
+
 
   business.timeoutId = setTimeout(() => {
     payout(business);
 
     business.producing = false;
-    business.elements.cycleBtn.disabled = false;
+    business.bot ?  business.elements.cycleBtn.disabled = true : business.elements.cycleBtn.disabled = false;
+
+    progress.style.transition = `none`;
+    progress.style.width = "0%";
 
     console.log(`${business.name} finshed`);
   }, business.timecycle)
@@ -326,7 +351,7 @@ const hireBot = (business, cost) => {
   }
 
   business.intervalId = setInterval(() =>
-    payout(business), business.timecycle,
+    runCycle(business), business.timecycle,
   );
 
   business.bot = true;
@@ -359,8 +384,11 @@ appPoliBtn.addEventListener("click", () => {
 
 // Reset Btn
 resetBtn.addEventListener("click", () => {
+  reset();
+});
 
-  state.money = 100000;
+const reset = () => {
+  state.money = 1;
 
   Object.values(businessesObj).forEach((b) => {
     clearInterval(b.intervalId);
@@ -378,11 +406,12 @@ resetBtn.addEventListener("click", () => {
     b.timeoutId = null;
     b.currentGoalIndex = 0;
 
-    b.elements.status.innerText = "Cycle: manual";
+    b.elements.status.innerText = 'Cycle: manual';
     b.elements.cycleBtn.disabled = false;
     b.elements.botBtn.disabled = false;
+    b.elements.progress.style.transition = 'none';
+    b.elements.progress.style.width = '0%';
 
-    updateState(b);
+    updateAllStates();
   });
-
-});
+}
